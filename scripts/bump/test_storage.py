@@ -107,6 +107,36 @@ class StorageTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "differs"):
             self.stage("A", [digest])
 
+    def test_same_version_rebuild_replaces_only_after_publication_and_is_repeatable(
+        self,
+    ):
+        # Long-lived pipeline contract: an explicit retry may change a release's PDFs.
+        branch = sync.BRANCH_PREFIX + "1.5.0"
+
+        def upload(digest):
+            for ext in storage.TYPES:
+                (self.root / f"{digest}.{ext}").write_bytes(digest.encode())
+            manifest = {"version": "1.5.0", "files": [{"md5": digest}]}
+            items = [{"id": digest, "url": f"https://byrdocs.org/files/{digest}.pdf"}]
+            return pipeline.stage_release(self.store, manifest, items, self.root)
+
+        old, new = "a" * 32, "b" * 32
+        first = upload(old)
+        storage.publish(self.store, first, self.publisher)
+        second = upload(new)
+        self.assertNotEqual(first, second)
+        self.assertEqual(storage.load_state(self.store)["published"], first)
+        storage.cleanup(self.store, {old}, {branch}, {branch})
+        self.assertIsNotNone(self.store.get("files", old + ".pdf"))
+        storage.publish(self.store, second, self.publisher)
+        storage.cleanup(self.store, {new}, set(), {branch})
+        self.assertIsNone(self.store.get("files", old + ".pdf"))
+        self.assertIsNotNone(self.store.get("files", new + ".pdf"))
+        self.assertEqual(upload(new), second)
+        snapshot = copy.deepcopy(self.store.objects)
+        storage.publish(self.store, second, lambda _: self.fail("repeat republished"))
+        self.assertEqual(self.store.objects, snapshot)
+
     def test_partial_publication_blocks_cleanup_and_retry_confirms_both_roots(self):
         self.stage("A", ["a" * 32], "A")
         storage.publish(self.store, "A", self.publisher)

@@ -1,0 +1,15 @@
+data:
+  content:
+  - 原题
+  - 答案
+  course:
+    name: 高级数理逻辑
+    type: 研究生
+  filetype: pdf
+  time:
+    end: '2004'
+    stage: 期末
+    start: '2003'
+id: 8cf0ae3708c5d237158cd1de48a67d54
+type: test
+url: https://byrdocs.org/files/8cf0ae3708c5d237158cd1de48a67d54.pdf

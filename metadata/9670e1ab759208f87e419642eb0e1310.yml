@@ -1,0 +1,15 @@
+data:
+  content:
+  - 原题
+  - 答案
+  course:
+    name: 数学分析（下）
+  filetype: pdf
+  time:
+    end: '2013'
+    semester: Second
+    stage: 期末
+    start: '2012'
+id: 9670e1ab759208f87e419642eb0e1310
+type: test
+url: https://byrdocs.org/files/9670e1ab759208f87e419642eb0e1310.pdf

@@ -1,0 +1,15 @@
+data:
+  content:
+  - 原题
+  - 答案
+  course:
+    name: 工科数学分析（上）
+  filetype: pdf
+  time:
+    end: '2026'
+    semester: First
+    stage: 期中
+    start: '2025'
+id: cc2f432a89aaa8be3039e4d58d061850
+type: test
+url: https://byrdocs.org/files/cc2f432a89aaa8be3039e4d58d061850.pdf

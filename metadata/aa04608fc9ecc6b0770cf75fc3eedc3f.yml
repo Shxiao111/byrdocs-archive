@@ -1,0 +1,15 @@
+data:
+  content:
+  - 原题
+  - 答案
+  course:
+    name: 高等数学
+  filetype: pdf
+  time:
+    end: '2002'
+    semester: First
+    stage: 期末
+    start: '2001'
+id: aa04608fc9ecc6b0770cf75fc3eedc3f
+type: test
+url: https://byrdocs.org/files/aa04608fc9ecc6b0770cf75fc3eedc3f.pdf

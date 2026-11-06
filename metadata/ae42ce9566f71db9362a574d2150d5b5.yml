@@ -1,0 +1,17 @@
+data:
+  college:
+  - 计算机学院
+  content:
+  - 原题
+  - 答案
+  course:
+    name: 概率论与数理统计
+  filetype: pdf
+  time:
+    end: '2020'
+    semester: Second
+    stage: 期末
+    start: '2019'
+id: ae42ce9566f71db9362a574d2150d5b5
+type: test
+url: https://byrdocs.org/files/ae42ce9566f71db9362a574d2150d5b5.pdf

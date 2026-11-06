@@ -1,0 +1,14 @@
+data:
+  content:
+  - 原题
+  - 答案
+  course:
+    name: 复变函数
+  filetype: pdf
+  time:
+    end: '2025'
+    stage: 期末
+    start: '2024'
+id: 8d098605deafca0fe9124a3b0f48d178
+type: test
+url: https://byrdocs.org/files/8d098605deafca0fe9124a3b0f48d178.pdf

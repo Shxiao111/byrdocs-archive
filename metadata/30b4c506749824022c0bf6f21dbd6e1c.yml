@@ -1,0 +1,15 @@
+data:
+  content:
+  - 原题
+  - 答案
+  course:
+    name: 概率论与数理统计
+  filetype: pdf
+  time:
+    end: '2023'
+    semester: Second
+    stage: 期末
+    start: '2022'
+id: 30b4c506749824022c0bf6f21dbd6e1c
+type: test
+url: https://byrdocs.org/files/30b4c506749824022c0bf6f21dbd6e1c.pdf

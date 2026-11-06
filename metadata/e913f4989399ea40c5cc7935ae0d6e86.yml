@@ -1,0 +1,15 @@
+data:
+  content:
+  - 原题
+  - 答案
+  course:
+    name: 数学分析
+  filetype: pdf
+  time:
+    end: '2017'
+    semester: Second
+    stage: 期末
+    start: '2016'
+id: e913f4989399ea40c5cc7935ae0d6e86
+type: test
+url: https://byrdocs.org/files/e913f4989399ea40c5cc7935ae0d6e86.pdf

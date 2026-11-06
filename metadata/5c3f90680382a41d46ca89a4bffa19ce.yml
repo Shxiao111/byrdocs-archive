@@ -1,0 +1,15 @@
+data:
+  content:
+  - 原题
+  - 答案
+  course:
+    name: 矩阵分析与应用
+    type: 研究生
+  filetype: pdf
+  time:
+    end: '2012'
+    stage: 期末
+    start: '2011'
+id: 5c3f90680382a41d46ca89a4bffa19ce
+type: test
+url: https://byrdocs.org/files/5c3f90680382a41d46ca89a4bffa19ce.pdf
