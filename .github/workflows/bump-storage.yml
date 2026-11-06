@@ -48,10 +48,13 @@ jobs:
       - name: Restrict manual sync and refresh merged data
         env:
           ACTION: ${{ inputs.action }}
+          RETRY_VERSION: ${{ inputs.retry }}
+          REQUESTED_VERSION: ${{ inputs.version }}
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
         run: |
-          if [ "$ACTION" = sync ] && [ "$GITHUB_REF_NAME" != "$DEFAULT_BRANCH" ]; then
-            echo 'sync must run from the default branch'; exit 1
+          if [ "$ACTION" = sync ] && [ "$GITHUB_REF_NAME" != "$DEFAULT_BRANCH" ] &&
+             { [ "$RETRY_VERSION" != true ] || [ -z "$REQUESTED_VERSION" ]; }; then
+            echo 'Branch sync requires an explicit version and retry'; exit 1
           fi
           git fetch origin "$DEFAULT_BRANCH"
           if [ "$GITHUB_REF_NAME" = "$DEFAULT_BRANCH" ]; then

@@ -199,14 +199,7 @@ class OwnershipTests(unittest.TestCase):
                 version="1.5.0",
                 apply=True,
             )
-            reader = SimpleNamespace(
-                pages=[
-                    SimpleNamespace(
-                        extract_text=lambda: "版权声明与授权许可 CC BY-NC-SA 4.0"
-                    ),
-                    None,
-                ]
-            )
+            reader = SimpleNamespace(pages=[None, None])
             with (
                 patch.object(sync, "PdfReader", return_value=reader),
                 self.assertRaisesRegex(ValueError, "没有有效条目"),

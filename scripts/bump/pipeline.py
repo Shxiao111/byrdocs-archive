@@ -146,6 +146,24 @@ def ensure_fixtures(store, repo, work):
     return items
 
 
+def stage_release(store, manifest, items, files):
+    """Keep same-version rebuilds separate until their replacement PR is published."""
+    batches = storage.load_state(store)["batches"]
+    base = "release-" + manifest["version"]
+    for label, batch in batches.items():
+        if batch["manifest"] == manifest and batch["metadata"] == items:
+            break
+    else:
+        label = base
+        revision = 1
+        while label in batches:
+            revision += 1
+            label = f"{base}-{revision}"
+    return storage.stage(
+        store, label, manifest, items, files, sync.BRANCH_PREFIX + manifest["version"]
+    )
+
+
 def publish_batch(store, repo, work, label):
     state = storage.load_state(store)
     ordinary = state["batches"]["fixtures"]["metadata"]
@@ -175,17 +193,9 @@ def bootstrap(store, repo, work):
     recover(store, repo, work)
     ensure_fixtures(store, repo, work)
     committed = sync.read_json(repo / sync.MANIFEST)
-    label = "release-" + committed["version"]
     out = work / "release"
     manifest, items = build(repo, out, committed["version"])
-    storage.stage(
-        store,
-        label,
-        manifest,
-        items,
-        out / "files",
-        sync.BRANCH_PREFIX + manifest["version"],
-    )
+    label = stage_release(store, manifest, items, out / "files")
     for path in sorted((repo / "schema").glob("*.y*ml")):
         storage.put_verified(
             store, "data", path.name, path.read_bytes(), "application/yaml"
@@ -201,7 +211,7 @@ def sync_release(store, repo, work, requested, retry):
     state = storage.load_state(store)
     if state["published"] is None:
         raise ValueError("先手动运行 publish，完成已合并版本的首次存储验收")
-    if state["published"] != "release-" + committed["version"]:
+    if state["batches"][state["published"]]["manifest"] != committed:
         bootstrap(store, repo, work)
     prs = pull_requests()
     maintenance(store, repo, prs)
@@ -228,14 +238,7 @@ def sync_release(store, repo, work, requested, retry):
         )
         for item in items
     ]
-    storage.stage(
-        store,
-        "release-" + version,
-        manifest,
-        items,
-        out / "files",
-        sync.BRANCH_PREFIX + version,
-    )
+    stage_release(store, manifest, items, out / "files")
     body = out / "pr-body.md"
     with body.open("a", encoding="utf-8") as stream:
         stream.write(
