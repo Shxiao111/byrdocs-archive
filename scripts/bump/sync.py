@@ -242,8 +242,9 @@ def parse_entry(entry):
     }
     if len(stages) > 1:
         raise SkipPaper("标题与标签的考试阶段冲突")
-    if stages:
-        time["stage"] = stages.pop()
+    if not stages:
+        raise SkipPaper("无法确定期中或期末试卷分类")
+    time["stage"] = stages.pop()
     course_data = {"name": course}
     if "研究生课" in tags:
         course_data["type"] = "研究生"

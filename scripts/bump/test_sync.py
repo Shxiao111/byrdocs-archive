@@ -96,6 +96,7 @@ class MetadataTests(unittest.TestCase):
         for source in [
             entry("高等数学期末考试"),
             entry("2024–2025《未知课程》期末"),
+            entry("2024–2025 高等数学学习笔记", []),
             entry(tags=["新分类"]),
             entry(tags=["高考"]),
             entry(tags=["附加"]),
