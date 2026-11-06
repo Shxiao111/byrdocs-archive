@@ -33,6 +33,20 @@ def repository_refs(repo):
     return storage.metadata_refs(read_metadata(repo / "metadata"))
 
 
+def require_current_default(repo):
+    """Do not publish or clean from a checkout superseded during a long upload."""
+    checkout = subprocess.check_output(
+        ["git", "-C", str(repo), "rev-parse", "refs/remotes/origin/master"], text=True
+    ).strip()
+    current = json.loads(sync.gh("api", f"repos/{sync.FORK}/git/ref/heads/master"))[
+        "object"
+    ]["sha"]
+    if checkout != current:
+        raise ValueError(
+            "Default branch changed during this run; rerun on the current merged data"
+        )
+
+
 def pull_requests():
     pages = json.loads(
         sync.gh(
@@ -74,6 +88,7 @@ def pr_references(prs):
 
 def maintenance(store, repo, prs):
     refs, opened, closed = pr_references(prs)
+    require_current_default(repo)
     count = storage.cleanup(store, repository_refs(repo) | refs, opened, closed)
     print(f"清理完成：{count} 个无引用的受管理对象")
 
@@ -138,6 +153,7 @@ def publish_batch(store, repo, work, label):
     def publish_all(items):
         combined = {item["id"]: item for item in ordinary}
         combined.update({item["id"]: item for item in items})
+        require_current_default(repo)
         return publisher.run(
             store, repo, work, sorted(combined.values(), key=lambda item: item["id"])
         )

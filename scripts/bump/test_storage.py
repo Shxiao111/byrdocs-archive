@@ -11,6 +11,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 import fixtures
+import pipeline
 import publisher
 import storage
 import sync
@@ -242,6 +243,14 @@ class StorageTests(unittest.TestCase):
 
 
 class PublisherBoundaryTests(unittest.TestCase):
+    def test_superseded_default_branch_stops_publication_and_cleanup(self):
+        with (
+            patch.object(pipeline.subprocess, "check_output", return_value="old\n"),
+            patch.object(sync, "gh", return_value='{"object":{"sha":"new"}}'),
+            self.assertRaisesRegex(ValueError, "Default branch changed"),
+        ):
+            pipeline.require_current_default(ROOT)
+
     def test_workflows_keep_cloud_credentials_out_of_pr_jobs(self):
         workflow = sync.YAML_CODEC.load(
             (ROOT / ".github/workflows/bump-sync.yml").read_text(encoding="utf-8")
