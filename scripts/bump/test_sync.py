@@ -273,7 +273,8 @@ class OwnershipTests(unittest.TestCase):
         workflow = (ROOT / ".github/workflows/bump-sync.yml").read_text(
             encoding="utf-8"
         )
-        self.assertNotIn("secrets.", workflow)
+        # Cloud credentials belong only to the isolated reusable workflow; PR tests stay offline.
+        self.assertNotIn("secrets.BUMP_TEST_", workflow)
         self.assertIn("BUMP_SCHEDULE_ENABLED", workflow)
 
 
