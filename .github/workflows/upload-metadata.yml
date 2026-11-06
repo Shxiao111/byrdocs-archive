@@ -25,6 +25,7 @@ env:
 
 jobs:
   update:
+    if: github.repository == 'byrdocs/byrdocs-archive'
     runs-on: ubuntu-latest
 
     steps:
