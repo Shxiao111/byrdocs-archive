@@ -14,7 +14,7 @@ python scripts/bump/sync.py build --version 1.5.0 --output output/bump
 
 在 Actions 中手动运行 **BUMP fork sync**；版本留空时从 RSS 选择最高正式版本。`retry` 允许重试已关闭或已合并版本，不覆盖待审 PR，也不允许降级。下载或构建失败可直接重跑。
 
-启用 fork 的 Actions，并在 Actions / General / Workflow permissions 中开启允许 GitHub Actions 创建 PR 的选项。首次测试通过后将仓库变量 `BUMP_SCHEDULE_ENABLED` 设置为 `true`，每天 UTC 00:17（北京时间 08:17、日本时间 09:17）检查一次。无需生产 secrets。
+启用 fork 的 Actions，并在 Actions / General / Workflow permissions 中开启允许 GitHub Actions 创建 PR 的选项。首次测试通过后将仓库变量 `BUMP_SCHEDULE_ENABLED` 设置为 `true`，每天 UTC 21:17（北京时间次日 05:17、日本时间次日 06:17，与生存指南 freshatlas 同步时间一致）检查一次。无需生产 secrets。
 
 ## 处理规则
 
