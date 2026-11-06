@@ -3,6 +3,7 @@
 import json
 import os
 import re
+from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime
 
 import boto3
@@ -182,7 +183,8 @@ def stage(store, label, manifest, metadata, files, branch=None):
             "ready": False,
         }
         save_state(store, state)
-    for obj in object_names(ids):
+
+    def inspect(obj):
         role, key, _ = split_object(obj)
         body = (files / key).read_bytes()
         content_type = TYPES[key.rsplit(".", 1)[1]]
@@ -190,11 +192,34 @@ def stage(store, label, manifest, metadata, files, branch=None):
         if existing is not None:
             if existing != (body, content_type):
                 raise ValueError(f"Existing object differs: {obj}")
-            continue
+            return None
+        return obj
+
+    def upload(obj):
+        role, key, _ = split_object(obj)
+        put_verified(
+            store, role, key, (files / key).read_bytes(), TYPES[key.rsplit(".", 1)[1]]
+        )
+
+    # Only immutable object IO is parallel. Ownership is saved once, before any PUT,
+    # under the workflow's shared concurrency lock; interrupted uploads remain owned.
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        missing = [
+            obj for obj in pool.map(inspect, object_names(ids)) if obj is not None
+        ]
+    for obj in missing:
         if obj not in state["owned"]:
             state["owned"].append(obj)
-            save_state(store, state)
-        put_verified(store, role, key, body, content_type)
+    if missing:
+        state["batches"][label]["ready"] = False
+        save_state(store, state)
+        with ThreadPoolExecutor(max_workers=4) as pool:
+            for number, _ in enumerate(pool.map(upload, missing), 1):
+                if number % 40 == 0 or number == len(missing):
+                    print(
+                        f"{label}: verified {number}/{len(missing)} uploaded objects",
+                        flush=True,
+                    )
     state["batches"][label]["ready"] = True
     save_state(store, state)
     return label
