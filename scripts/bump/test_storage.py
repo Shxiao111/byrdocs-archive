@@ -208,6 +208,11 @@ class StorageTests(unittest.TestCase):
             self.assertEqual(
                 path.read_bytes(), (self.root / "two/files" / path.name).read_bytes()
             )
+            if path.suffix == ".pdf":
+                self.assertIn(
+                    "Self-authored fixture",
+                    sync.PdfReader(path).pages[0].extract_text(),
+                )
 
 
 class PublisherBoundaryTests(unittest.TestCase):

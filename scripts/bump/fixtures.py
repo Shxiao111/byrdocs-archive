@@ -30,7 +30,7 @@ def make_pdf(label):
             "0 -35 Td (Self-authored fixture. Not real course material.) Tj ET"
         ).encode("ascii")
     )
-    page[NameObject("/Contents")] = stream
+    page.replace_contents(stream)
     writer.add_metadata({"/Title": label, "/Author": "BYR Docs fork storage tests"})
     output = io.BytesIO()
     writer.write(output)
