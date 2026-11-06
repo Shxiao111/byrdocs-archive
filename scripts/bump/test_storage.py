@@ -8,6 +8,7 @@ import urllib.error
 import urllib.request
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from unittest.mock import patch
 
 import fixtures
 import publisher
@@ -141,6 +142,31 @@ class StorageTests(unittest.TestCase):
         storage.cleanup(self.store, set(), set(), {"A"})
         self.assertIsNone(self.store.get("files", a + ".pdf"))
         self.assertEqual(self.store.deleted.count(("backup", a + ".pdf")), 1)
+
+    def test_confirmed_objects_survive_final_state_write_failure(self):
+        self.stage("A", ["a" * 32], "A")
+        storage.publish(self.store, "A", self.publisher)
+        self.stage("B", ["b" * 32], "B")
+        original_put = self.store.put
+
+        def fail_final_state(role, key, body, kind):
+            if key == storage.STATE_KEY:
+                state = json.loads(body)
+                if state["published"] == "B" and state["publishing"] is None:
+                    raise OSError("final state write interrupted")
+            original_put(role, key, body, kind)
+
+        with (
+            patch.object(self.store, "put", side_effect=fail_final_state),
+            self.assertRaises(OSError),
+        ):
+            storage.publish(self.store, "B", self.publisher)
+        self.assertEqual(storage.load_state(self.store)["publishing"], "B")
+        with self.assertRaisesRegex(ValueError, "incomplete"):
+            storage.cleanup(self.store, set(), set(), {"A"})
+        storage.publish(self.store, "B", self.publisher)
+        storage.cleanup(self.store, set(), set(), {"A"})
+        self.assertIsNone(self.store.get("files", "a" * 32 + ".pdf"))
 
     def test_orphans_expire_and_closed_pr_uploads_are_reclaimed(self):
         self.stage("orphan", ["a" * 32], "no-pr")
