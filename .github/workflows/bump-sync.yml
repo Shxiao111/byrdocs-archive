@@ -16,7 +16,7 @@ on:
         options: [sync, probe, exercise, publish]
         default: sync
   schedule:
-    - cron: '17 0 * * *'
+    - cron: '42 18 * * *'
   push:
     paths:
       - 'scripts/bump/**'
