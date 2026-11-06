@@ -10,12 +10,19 @@ on:
         description: '重新处理已关闭或已合并的版本'
         type: boolean
         default: false
+      storage_action:
+        description: '测试存储：sync 日常同步；probe 连接检查；exercise 故障演练；publish 发布已合并版本'
+        type: choice
+        options: [sync, probe, exercise, publish]
+        default: sync
   schedule:
     - cron: '17 0 * * *'
   push:
     paths:
       - 'scripts/bump/**'
       - '.github/workflows/**'
+      - 'sources/bump.json'
+      - 'metadata/**'
   pull_request:
     paths:
       - 'scripts/bump/**'
@@ -42,6 +49,7 @@ jobs:
     needs: test
     if: >-
       github.repository == 'Shxiao111/byrdocs-archive' &&
+      vars.BUMP_TEST_STORAGE_ENABLED != 'true' &&
       (github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'schedule' && vars.BUMP_SCHEDULE_ENABLED == 'true'))
     runs-on: ubuntu-latest
@@ -97,3 +105,21 @@ jobs:
         env:
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: python scripts/bump/sync.py pr --repository "$SYNC_REPOSITORY" --output output/bump --run-url "$RUN_URL"
+
+  storage:
+    needs: test
+    if: >-
+      github.repository == 'Shxiao111/byrdocs-archive' &&
+      vars.BUMP_TEST_STORAGE_ENABLED == 'true' &&
+      (github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'schedule' && vars.BUMP_SCHEDULE_ENABLED == 'true') ||
+      (github.event_name == 'push' && github.ref == 'refs/heads/master'))
+    permissions:
+      contents: write
+      pull-requests: write
+    uses: ./.github/workflows/bump-storage.yml
+    with:
+      action: ${{ github.event_name == 'push' && 'publish' || inputs.storage_action || 'sync' }}
+      version: ${{ inputs.version || '' }}
+      retry: ${{ inputs.retry == true }}
+    secrets: inherit

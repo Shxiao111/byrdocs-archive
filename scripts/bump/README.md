@@ -33,4 +33,70 @@ Artifact 包含单卷 PDF、JPG/WebP 封面、YAML、批次清单和仅预览的
 
 所有 PR API 明确指定 fork；推送前检查 origin。继承的生产发布、schema 上传、wiki 部署和线上 PR 检查仅允许上游仓库执行。生成任务自身执行离线检查，无需依赖机器人 PR 再触发工作流。
 
-正式存储接入、合并后发布和实际清理是后续工作，本实现不会执行。不要将 artifact 中的 YAML 单独合入上游。
+生产存储接入仍未启用。不要将 artifact 中的 YAML 单独合入上游。
+
+## 私有 R2 测试环境
+
+`BUMP_TEST_STORAGE_ENABLED=true` 后使用 `bump-storage.yml`，替代 artifact-only 同步任务。
+三个桶只模拟真实存储布局，不部署主站。正式文件位于桶根目录，不带版本前缀：
+
+| 桶 | 内容 |
+|---|---|
+| `byrdocs-bump-test-files` | `<md5>.pdf`、`<md5>.jpg`、`<md5>.webp` |
+| `byrdocs-bump-test-data` | `metadata.json`、`sitemap.xml`、根目录 schema 文件；`_bump/` 为内部状态 |
+| `byrdocs-bump-test-backup` | `<md5>.pdf` 原文件备份 |
+
+混合发布输入是当前大邮条目加三份自建教材、资料、普通试卷样例。样例在 `fixtures.py` 中定义并在输出目录生成，不写入正式 `metadata/`。教材 ISBN 是用于验证格式转换的测试数据，不代表真实出版物。
+
+发布固定使用未修改的 `byrdocs-check v6.5.1`（`bad8331ae6fa49147349b09665b2f1e93ec4277f`），PDFium 使用已固定的 `pypdfium2` 所带库。临时 Git 目录记录输入 YAML 的提交时间，原程序负责文件大小、ISBN、JSON 序列化及 sitemap。它仅访问本地 `127.0.0.1:18765` 的临时上传查询和空 `ids` 发布接口；任何非空发布或其他请求失败。sitemap 使用此测试地址，YAML 下载 URL 仍保持现有格式。首页日期只读查询 `Shxiao111/byrdocs` 的提交。
+
+### 从零配置
+
+1. 注册、验证并登录 Cloudflare，在 R2 页面自行确认结算和开通；无需域名。
+2. 创建上述三个 Standard 私有桶，保持 Public Access 为 Disabled。
+3. 创建 **Object Read & Write** 令牌，仅授权这三个桶，不授权全部桶或桶管理权限。
+4. 在 fork 的 Settings → Secrets and variables → Actions 保存以下设置。
+
+Secrets：`BUMP_TEST_ACCESS_KEY_ID`、`BUMP_TEST_SECRET_ACCESS_KEY`。
+
+Variables：
+
+| 名称 | 值 |
+|---|---|
+| `BUMP_TEST_ACCOUNT_ID` | Cloudflare Account ID |
+| `BUMP_TEST_FILES_BUCKET` | `byrdocs-bump-test-files` |
+| `BUMP_TEST_DATA_BUCKET` | `byrdocs-bump-test-data` |
+| `BUMP_TEST_BACKUP_BUCKET` | `byrdocs-bump-test-backup` |
+| `BUMP_TEST_BACKUP_ENDPOINT` | `https://<Account ID>.r2.cloudflarestorage.com` |
+| `BUMP_TEST_BACKUP_REGION` | `auto` |
+| `BUMP_TEST_STORAGE_ENABLED` | `true` |
+| `BUMP_SCHEDULE_ENABLED` | 配置、演练期间为 `false`；验收完成后设为 `true` |
+
+仅测试配置会映射为原发布程序的环境变量；不要在 fork 填入生产凭据。备份 endpoint 单独配置，但本阶段必须为同一测试账号的 R2 endpoint。
+
+### 第一次运行
+
+在 Actions → **BUMP fork sync** → Run workflow 依次选择 `storage_action`：
+
+1. `probe`：三个桶上传、读回、删除小文件。
+2. `exercise`：空环境运行 A→B 替换、上传失败、半完成发布、部分删除、普通/共享文件保护和重复发布；结束后清理演练数据。演练必须暂停每日同步，已有真实 release 时拒绝执行。中断后重跑会依据演练标记及内部清单重置演练，不遍历桶删除未知对象。
+3. `publish`：从默认分支的清单重建当前正式版，与已合并 MD5、页码和受管理 YAML 一致才上传。即使版本早已合并也执行，不依赖 RSS 的跳过逻辑。发布大邮条目和三份普通样例，读回确认两个发布文件后清理旧对象。
+4. 下载 artifact 抽查 PDF、封面和许可页，检查任务日志，再启用每日同步。
+
+实现 PR 合并前可选功能分支运行 `probe`、`exercise`、`publish`；元信息始终从默认分支刷新。`sync` 只允许默认分支。新增代码必须合并后才能作为每日任务运行。
+
+### 日常更新与恢复
+
+`sync` 先恢复未完成发布和清理，再检查 RSS；新正式版全部重切，上传并读回 PDF、封面、备份后提供 artifact，最后创建 fork PR。版本、`retry` 和待审 PR 规则保持不变。
+
+默认分支变更触发发布；同版本已确认发布不重复覆盖。合并与云端发布分别记录。`metadata.json` 和 `sitemap.xml` 分别写入，任何一个失败都禁止清理；原程序可能已写入另一个文件，此时重跑完成发布，不宣称多对象原子更新。
+
+`_bump/state.json` 记录批次、上传前声明的对象所有权、当前/未完成发布和待删除对象；`_bump/confirmed/` 只保存当前已确认的两个发布文件用于读回核对。它们不是客户端读取入口。已有相同内容对象会复用但不自动取得删除权；不同内容则报错。删除只从本任务所有权清单产生，保护仓库全部 YAML、当前已发布条目、待审同步 PR 和固定普通样例。
+
+关闭未合并 PR 的无引用文件在下次每日维护回收；无 PR 的中断批次保留 24 小时。删除失败保留剩余记录；每次重试重新检查引用，新增引用会取消删除。发布失败不删除旧对象，成功后不保留旧 PDF 历史副本。
+
+排错：上传/发布/清理失败先查看具体步骤，再重跑相同 action。原始源文件变化导致 MD5 不一致时不能强制覆盖，需核对源文件和已合并清单。外部修改已发布 JSON 会阻止清理，需先核对状态，不能删除内部日志绕过检查。
+
+停止自动任务：设 `BUMP_SCHEDULE_ENABLED=false`；同时停止手动与合并触发的云端操作则设 `BUMP_TEST_STORAGE_ENABLED=false`。后者保留既有 artifact-only 任务，若要完全暂停同步需两个开关都关闭。Cloudflare R2 Overview 查看用量，Billing 查看实际计费。
+
+测试下载使用 artifact 或 Cloudflare 私有桶的对象下载；当前 `byrdocs.org` URL 不作为测试下载入口。生产 CDN、权限、搜索缓存和其他备份服务商行为仍需正式接入时单独验证。
