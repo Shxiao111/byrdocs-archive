@@ -1,0 +1,15 @@
+data:
+  content:
+  - 原题
+  - 答案
+  course:
+    name: 概率论与数理统计
+  filetype: pdf
+  time:
+    end: '2019'
+    semester: Second
+    stage: 期末
+    start: '2018'
+id: 0e28bc487967d8630ae5b759a57ec79a
+type: test
+url: https://byrdocs.org/files/0e28bc487967d8630ae5b759a57ec79a.pdf

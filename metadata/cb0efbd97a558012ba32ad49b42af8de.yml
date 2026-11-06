@@ -1,0 +1,15 @@
+data:
+  content:
+  - 原题
+  - 答案
+  course:
+    name: 复变函数
+  filetype: pdf
+  time:
+    end: '2018'
+    semester: First
+    stage: 期末
+    start: '2017'
+id: cb0efbd97a558012ba32ad49b42af8de
+type: test
+url: https://byrdocs.org/files/cb0efbd97a558012ba32ad49b42af8de.pdf

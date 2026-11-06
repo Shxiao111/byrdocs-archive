@@ -1,0 +1,15 @@
+data:
+  content:
+  - 原题
+  - 答案
+  course:
+    name: 高等数学A（上）
+  filetype: pdf
+  time:
+    end: '2021'
+    semester: First
+    stage: 期中
+    start: '2020'
+id: f12e5ea88bc539e31534b758a7ea443a
+type: test
+url: https://byrdocs.org/files/f12e5ea88bc539e31534b758a7ea443a.pdf

@@ -1,0 +1,14 @@
+data:
+  content:
+  - 原题
+  - 答案
+  course:
+    name: 线性代数
+  filetype: pdf
+  time:
+    end: '2015'
+    stage: 期末
+    start: '2014'
+id: 85df152acabb203429a214579ca8d0b9
+type: test
+url: https://byrdocs.org/files/85df152acabb203429a214579ca8d0b9.pdf

@@ -1,0 +1,15 @@
+data:
+  content:
+  - 原题
+  - 答案
+  course:
+    name: 高等数学（下）
+  filetype: pdf
+  time:
+    end: '2019'
+    semester: Second
+    stage: 期中
+    start: '2018'
+id: 3ce31e29519e5c97cb3bed322c0bc4cc
+type: test
+url: https://byrdocs.org/files/3ce31e29519e5c97cb3bed322c0bc4cc.pdf

@@ -1,0 +1,15 @@
+data:
+  content:
+  - 原题
+  - 答案
+  course:
+    name: 高等数学
+  filetype: pdf
+  time:
+    end: '2021'
+    semester: First
+    stage: 期中
+    start: '2020'
+id: cfcb785ec84476389388c4cf29ebfea3
+type: test
+url: https://byrdocs.org/files/cfcb785ec84476389388c4cf29ebfea3.pdf

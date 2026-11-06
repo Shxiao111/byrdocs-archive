@@ -1,0 +1,15 @@
+data:
+  content:
+  - 原题
+  - 答案
+  course:
+    name: 高等数学B（下）
+  filetype: pdf
+  time:
+    end: '2026'
+    semester: Second
+    stage: 期中
+    start: '2025'
+id: d44642af14d3fe65761f6467a2b425ef
+type: test
+url: https://byrdocs.org/files/d44642af14d3fe65761f6467a2b425ef.pdf

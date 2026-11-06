@@ -1,0 +1,15 @@
+data:
+  content:
+  - 原题
+  - 答案
+  course:
+    name: 数学物理方法
+  filetype: pdf
+  time:
+    end: '2017'
+    semester: First
+    stage: 期末
+    start: '2016'
+id: 79b5f924733513b093972f75b7965d49
+type: test
+url: https://byrdocs.org/files/79b5f924733513b093972f75b7965d49.pdf

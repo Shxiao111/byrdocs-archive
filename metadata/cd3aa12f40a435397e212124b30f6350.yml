@@ -1,0 +1,15 @@
+data:
+  content:
+  - 原题
+  - 答案
+  course:
+    name: 概率论与随机过程
+  filetype: pdf
+  time:
+    end: '2023'
+    semester: First
+    stage: 期末
+    start: '2022'
+id: cd3aa12f40a435397e212124b30f6350
+type: test
+url: https://byrdocs.org/files/cd3aa12f40a435397e212124b30f6350.pdf
